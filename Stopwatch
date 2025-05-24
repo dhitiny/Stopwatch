@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <unistd.h>  // untuk sleep()
+#include <stdlib.h>
+
+int main() {
+    int detik = 0, menit = 0, jam = 0;   //input inisialisasi waktu
+    char input;
+
+    printf("Tekan Enter untuk mulai stopwatch...");
+    getchar();   //menunggu pengguna untuk menekan enter untuk memulai
+    printf("Stopwatch dimulai. Tekan 'q' lalu Enter untuk berhenti.\n");
+
+    while (1) {  //loop utama digunakan untuk berjalan terus menerus
+        //tampilkan waktu dengan format HH.MM.SS
+        printf("\r%02d:%02d:%02d", jam, menit, detik);
+        fflush(stdout);                 //paksa output untuk ditampilkan
+
+        sleep(1);                       //tunggu 1 detik
+
+        detik++; //tambah detik setiap loop
+        if (detik == 60) {              //jika 60 detik, reset ke 0 dan tambah menit
+            detik = 0;
+            menit++;
+        }
+        if (menit == 60) {              //jika 60 menit, reset ke 0 dan tambah jam
+            menit = 0;
+            jam++;
+        }
+
+        // mengecek input tanpa memberhentikan program
+        fd_set set;                     //set untuk file descriptor
+        struct timeval timeout;         //timeout 0 artinya tidak menunggu
+        FD_ZERO(&set);
+        FD_SET(0, &set);                //0 adalah stdin
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 0;
+
+        int ready = select(1, &set, NULL, NULL, &timeout);  //mengecek apakah ada input
+        if (ready > 0) {
+            input = getchar();
+            if (input == 'q' || input == 'Q') {             //jika input 'q' atau 'Q'
+                printf("\nStopwatch dihentikan.\n");
+                break;                                      //keluar dari loop
+            }
+        }
+    }
+
+    printf("Waktu akhir: %02d:%02d:%02d\n", jam, menit, detik);
+    return 0;
+}
